@@ -1,7 +1,6 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const port = 3000;
 
 const dataPath = path.join(__dirname, 'data');
 
@@ -36,6 +35,27 @@ function getAllJokes(res, req) {
     }
 
     res.end(JSON.stringify(allJokes));
+};
+
+function addJokes(res, req) {
+    let data = '';  
+
+    req.on('data', function (chunk) {
+        data += chunk;
+    });
+    
+    req.on('end', function () {
+        let joke = JSON.parse(data);
+        joke.likes = 0;
+        joke.dislikes = 0;
+
+        let files = fs.readdirSync(dataPath);
+        let fileName = dir.length + '.js';
+        fs.writeFileSync = path.join(dataPath, fileName);
+        fs.writeFileSync(dataPath, JSON.stringify(joke));
+
+        res.end();
+    });
 }
 
 

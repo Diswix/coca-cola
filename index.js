@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 
 const dataPath = path.join(__dirname, 'data');
 
@@ -11,6 +12,9 @@ const server = http.createServer((req, res) => {
 
     if (req.url == '/jokes' && req.method == 'POST') {
         addJokes(res, req);
+    }
+    if (req.url.startsWith('/like')) {
+        like(res, req);
     }
 });
 
@@ -56,6 +60,19 @@ function addJokes(res, req) {
 
         res.end();
     });
+
+    function like(res, req) {
+        const url = require('url');
+        const params = url.parse(req.url, true).query;
+        let id = params.id;
+        if (id) {
+            let filePath = path.join(dataPath, id + '.js');
+            let file = fs.readFileSync(filePath);
+            let jokeJson = Buffer.from(file).toString();
+            let joke = JSON.parse(jokeJson);
+            joke.likes++;
+            fs.writeFileSync(filePath, JSON.stringify(joke)); 
+        }
+    res.end();
 }
-
-
+}

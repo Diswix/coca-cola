@@ -6,18 +6,25 @@ const url = require('url');
 const dataPath = path.join(__dirname, 'data');
 
 const server = http.createServer((req, res) => {
-    if (req.url == '/jokes' && req.method == 'GET') {
-        getAllJokes(res, req);
-    }
+    try {
+        res.setHeader('Access-Control-Allow-Origin', '*');
 
-    if (req.url == '/jokes' && req.method == 'POST') {
-        addJokes(res, req);
-    }
-    if (req.url.startsWith('/like')) {
-        like(res, req);
-    }
-    if (req.url.startsWith('/dislike')) {
-        dislike(res, req);
+        if (req.url == '/jokes' && req.method == 'GET') {
+            getAllJokes(res, req);
+        }
+
+        if (req.url == '/jokes' && req.method == 'POST') {
+            addJokes(res, req);
+        }
+        if (req.url.startsWith('/like')) {
+            like(res, req);
+        }
+        if (req.url.startsWith('/dislike')) {
+            dislike(res, req);
+        }
+    } catch (e) {
+        res.statusCode = 500;
+       return res.end('error 500');
     }
 });
 
@@ -35,7 +42,7 @@ function getAllJokes(res, req) {
 
         let jokeJson = Buffer.from(file).toString();
         let joke = JSON.parse(jokeJson);
-        
+
         joke.id = i;
 
         allJokes.push(joke);
@@ -45,12 +52,12 @@ function getAllJokes(res, req) {
 };
 
 function addJokes(res, req) {
-    let data = '';  
+    let data = '';
 
     req.on('data', function (chunk) {
         data += chunk;
     });
-    
+
     req.on('end', function () {
         let joke = JSON.parse(data);
         joke.likes = 0;
@@ -65,30 +72,30 @@ function addJokes(res, req) {
     });
 }
 function like(res, req) {
-        const url = require('url');
-        const params = url.parse(req.url, true).query;
-        let id = params.id;
-        if (id) {
-            let filePath = path.join(dataPath, id + '.js');
-            let file = fs.readFileSync(filePath);
-            let jokeJson = Buffer.from(file).toString();
-            let joke = JSON.parse(jokeJson);
-            joke.likes++;
-            fs.writeFileSync(filePath, JSON.stringify(joke)); 
-        }
+    const url = require('url');
+    const params = url.parse(req.url, true).query;
+    let id = params.id;
+    if (id) {
+        let filePath = path.join(dataPath, id + '.js');
+        let file = fs.readFileSync(filePath);
+        let jokeJson = Buffer.from(file).toString();
+        let joke = JSON.parse(jokeJson);
+        joke.likes++;
+        fs.writeFileSync(filePath, JSON.stringify(joke));
+    }
     res.end();
 }
 function dislike(res, req) {
-        const url = require('url');
-        const params = url.parse(req.url, true).query;
-        let id = params.id;
-        if (id) {
-            let filePath = path.join(dataPath, id + '.js');
-            let file = fs.readFileSync(filePath);
-            let jokeJson = Buffer.from(file).toString();
-            let joke = JSON.parse(jokeJson);
-            joke.dislikes++;
-            fs.writeFileSync(filePath, JSON.stringify(joke)); 
-        }
-    res.end();   
+    const url = require('url');
+    const params = url.parse(req.url, true).query;
+    let id = params.id;
+    if (id) {
+        let filePath = path.join(dataPath, id + '.js');
+        let file = fs.readFileSync(filePath);
+        let jokeJson = Buffer.from(file).toString();
+        let joke = JSON.parse(jokeJson);
+        joke.dislikes++;
+        fs.writeFileSync(filePath, JSON.stringify(joke));
+    }
+    res.end();
 }
